@@ -1,4 +1,4 @@
-# Pong
+# <a href="https://your-friendly-neighborhood-programmer.github.io/Pong/">Pong</a>
 
 A classic Pong game implementation where you play against an AI opponent.
 
@@ -12,7 +12,7 @@ A classic Pong game implementation where you play against an AI opponent.
 
 ## How to Play
 
-Use the up (↑) and down (↓) arrow keys or 'W' and 'S' keys to control your green paddle on the right side of the screen. The goal is to prevent the ball from passing your paddle while trying to get the ball past the AI's red paddle on the left.
+Go to <a href="https://your-friendly-neighborhood-programmer.github.io/Pong/">this link</a>. Use the up (↑) and down (↓) arrow keys or 'W' and 'S' keys to control your green paddle on the right side of the screen. The goal is to prevent the ball from passing your paddle while trying to get the ball past the AI's red paddle on the left.
 
 ## Game Mechanics
 
@@ -25,5 +25,5 @@ Use the up (↑) and down (↓) arrow keys or 'W' and 'S' keys to control your g
 ## Technical Details
 
 - Built with HTML5 Canvas
-- Vanilla JavaScript for game logic
+- JavaScript for game logic
 - Responsive design
