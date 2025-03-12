@@ -50,39 +50,47 @@ document.addEventListener('DOMContentLoaded', function() {
         paddleWidth: 15,
         paddleHeight: 100,
         score: 0,
-        baseSpeed: 5,
-        difficultyFactor: 1.0,
-        reactionDistance: 400, 
+        baseSpeed: 4, 
+        difficultyFactor: 0.85, 
+        reactionDistance: 250, 
+        errorFactor: 0.4, 
         move: function() {
             let predictedY = ball.yLocation;
             if (ball.speedX < 0) {
                 const timeToReach = (ball.xLocation - this.xLocation - this.paddleWidth) / -ball.speedX;
                 if (timeToReach > 0) {
-                    predictedY = ball.yLocation + (ball.speedY * timeToReach);
-                    const bounceIterations = 3; // Check for up to 3 bounces
+                   predictedY = ball.yLocation + (ball.speedY * timeToReach);
+                   const bounceIterations = 1;
                     let tempY = predictedY;
                     let tempSpeedY = ball.speedY;
-                    for (let i = 0; i < bounceIterations; i++) {
+                   for (let i = 0; i < bounceIterations; i++) {
                         if (tempY < 0 || tempY > canvas.height) {
                             tempSpeedY = -tempSpeedY;
                             tempY = tempY < 0 ? -tempY : 2 * canvas.height - tempY;
                         }
                     }
                     predictedY = tempY;
+                    const distanceRatio = Math.min(1, (ball.xLocation / this.reactionDistance));
+                    const maxError = canvas.height * this.errorFactor * distanceRatio;
+                    predictedY += (Math.random() * maxError) - (maxError / 2);
                 }
             } 
+            
             let targetY = predictedY - (this.paddleHeight / 2);
             this.updateDifficulty();
-            let moveIntensity = 1.0;
+            let moveIntensity = 0.8; 
             if (ball.speedX >= 0) {
-                moveIntensity = 0.4 * this.difficultyFactor;
+                moveIntensity = 0.3 * this.difficultyFactor; 
                 targetY = ball.yLocation - (this.paddleHeight / 2);
             } else {
                 moveIntensity = this.difficultyFactor;
             }
             if (ball.speedX < 0) {
                 const distanceRatio = Math.max(0, 1 - (ball.xLocation / this.reactionDistance));
-                moveIntensity *= (0.7 + (0.3 * distanceRatio));
+                moveIntensity *= (0.5 + (0.3 * distanceRatio));
+            }
+            if (Math.random() < 0.05) {
+                moveIntensity *= 0.5;
             }
             const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 3) * moveIntensity;
             const goal = targetY - this.yLocation;
@@ -101,11 +109,11 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDifficulty: function() {
             const scoreDiff = playerObject.score - this.score;
             if (scoreDiff > 3) {
-                this.difficultyFactor = 1.2;
-            } else if (scoreDiff < -3) {
-                this.difficultyFactor = 0.9;
-            } else {
                 this.difficultyFactor = 1.0;
+            } else if (scoreDiff < -3) {
+                this.difficultyFactor = 0.7;
+            } else {
+                this.difficultyFactor = 0.85;
             }
         }
     }
