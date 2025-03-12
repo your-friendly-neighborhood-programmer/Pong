@@ -8,17 +8,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const playerPaddleColor = computedStyle.getPropertyValue('--player-paddle-color').trim();
     const textColor = computedStyle.getPropertyValue('--text-color').trim();
     let gameTime = 0;
-    const speedIncreaseInterval = 1000; 
+    const speedIncreaseInterval = 3000; 
     let lastSpeedIncreaseTime = 0;
-    const speedIncreaseFactor = 0.02; 
+    const speedIncreaseFactor = 0.005; 
     const ball = {
         xLocation: canvas.width / 2,
         yLocation: canvas.height / 2,
         radius: 10,
-        speedX: 5,
-        speedY: 5,
-        baseSpeedX: 5,
-        baseSpeedY: 5,
+        speedX: 3,
+        speedY: 3,
+        baseSpeedX: 3,
+        baseSpeedY: 3,
         reset: function() {
             this.xLocation = canvas.width / 2;
             this.yLocation = canvas.height / 2;
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         score: 0,
         baseSpeed: 6,
         move: function(direction) {
-            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 5);
+            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 3);
             if (direction === 'up' && this.yLocation > 0) {
                 this.yLocation -= currentSpeed;
             } else if (direction === 'down' && this.yLocation + this.paddleHeight < canvas.height) {
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         baseSpeed: 5,
         move: function() {
             const goal = ball.yLocation - (this.yLocation + this.paddleHeight / 2);
-            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 5);
+            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 3);
             if (ball.speedX > 0) {
                 if(Math.abs(this.yLocation - goal) > currentSpeed) {
                     if (this.yLocation < goal) {
@@ -127,9 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.font = 'bold 16px Orbitron, Rajdhani, monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = secondaryColor;
-        const speedPercentage = Math.round((ball.baseSpeedX / 5 - 1) * 100);
+        const speedPercentage = Math.round((ball.baseSpeedX / 3 - 1) * 100);
         ctx.fillText(`Speed: +${speedPercentage}%`, canvas.width / 2, 20);
-        const playerSpeedPercentage = Math.round((playerObject.baseSpeed * (ball.baseSpeedX / 5) / 6 - 1) * 100);
+        const playerSpeedPercentage = Math.round((playerObject.baseSpeed * (ball.baseSpeedX / 3) / 6 - 1) * 100);
         ctx.fillText(`Paddle Speed: +${playerSpeedPercentage}%`, canvas.width / 2, 40);
     }
     function increaseSpeed() {
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ) {
             ball.speedX = -ball.speedX;
             ball.speedY += (Math.random() * 2 - 1);
-            ball.speedX *= 1.05;
+            ball.speedX *= 1.02;
             if (Math.abs(ball.speedX) > 15) ball.speedX = 15 * Math.sign(ball.speedX);
             if (Math.abs(ball.speedY) > 10) ball.speedY = 10 * Math.sign(ball.speedY);
         }
