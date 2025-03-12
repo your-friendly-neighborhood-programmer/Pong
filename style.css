@@ -1,30 +1,121 @@
+:root {
+    --primary-color: #00f7ff;
+    --secondary-color: #ff00e6;
+    --accent-color: #7c00ff;
+    --text-color: #ffffff;
+    --ai-paddle-color: #ff3860;
+    --player-paddle-color: #00ff88;
+    --background-gradient: linear-gradient(135deg, #0f0f30, #1a1a40);
+}
+
 body {
-    background-color: #000000ec;
-    font-family: Arial, sans-serif;
+    background: var(--background-gradient);
+    font-family: 'Orbitron', 'Rajdhani', 'Courier New', monospace;
     margin: 0;
-    padding: 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    color: var(--text-color);
 }
+
 canvas {
-    border: 2px solid white;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.5),
+                inset 0 0 10px rgba(0, 247, 255, 0.3);
+    margin: 20px 0;
 }
+
 h1 {
     text-align: center;
-    color: white;
+    color: var(--primary-color);
+    font-size: 3.5rem;
+    letter-spacing: 4px;
+    margin: 10px 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--primary-color),
+                 0 0 20px var(--primary-color);
+    animation: glow 1.5s ease-in-out infinite alternate;
 }
-footer p {
-    color: white;
+
+.instructions {
+    color: var(--text-color);
+    background-color: rgba(15, 15, 48, 0.7);
+    padding: 15px 30px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    border: 1px solid var(--secondary-color);
+    box-shadow: 0 0 10px rgba(255, 0, 230, 0.5);
+}
+
+footer {
+    margin-top: 30px;
+    padding: 15px;
+    width: 100%;
     text-align: center;
 }
+
+footer p {
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
 footer a {
-    color: white;
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
 }
+
 footer a:hover {
-    color: #67b4d6;
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
 }
-.instructions {
-    color: white;
+
+footer a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+footer a:hover::after {
+    width: 100%;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px var(--primary-color),
+                    0 0 10px var(--primary-color);
+    }
+    to {
+        text-shadow: 0 0 10px var(--primary-color),
+                    0 0 20px var(--primary-color),
+                    0 0 30px var(--primary-color);
+    }
+}
+
+@media (max-width: 800px) {
+    canvas {
+        width: 95%;
+        height: auto;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .instructions {
+        font-size: 1rem;
+        padding: 10px 20px;
+    }
 }
