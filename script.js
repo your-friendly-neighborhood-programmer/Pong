@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
         speedY: 3,
         baseSpeedX: 3,
         baseSpeedY: 3,
+        lastCollisionTime: 0, 
+        collisionDebounceTime: 200, 
         reset: function() {
             this.xLocation = canvas.width / 2;
             this.yLocation = canvas.height / 2;
@@ -49,20 +51,62 @@ document.addEventListener('DOMContentLoaded', function() {
         paddleHeight: 100,
         score: 0,
         baseSpeed: 5,
+        difficultyFactor: 1.0,
+        reactionDistance: 400, 
         move: function() {
-            const goal = ball.yLocation - (this.yLocation + this.paddleHeight / 2);
-            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 3);
-            if (ball.speedX > 0) {
-                if(Math.abs(this.yLocation - goal) > currentSpeed) {
-                    if (this.yLocation < goal) {
-                        this.yLocation += currentSpeed;
-                    } else {
-                        this.yLocation -= currentSpeed;
+            let predictedY = ball.yLocation;
+            if (ball.speedX < 0) {
+                const timeToReach = (ball.xLocation - this.xLocation - this.paddleWidth) / -ball.speedX;
+                if (timeToReach > 0) {
+                    predictedY = ball.yLocation + (ball.speedY * timeToReach);
+                    const bounceIterations = 3; // Check for up to 3 bounces
+                    let tempY = predictedY;
+                    let tempSpeedY = ball.speedY;
+                    for (let i = 0; i < bounceIterations; i++) {
+                        if (tempY < 0 || tempY > canvas.height) {
+                            tempSpeedY = -tempSpeedY;
+                            tempY = tempY < 0 ? -tempY : 2 * canvas.height - tempY;
+                        }
                     }
+                    predictedY = tempY;
                 }
+            } 
+            let targetY = predictedY - (this.paddleHeight / 2);
+            this.updateDifficulty();
+            let moveIntensity = 1.0;
+            if (ball.speedX >= 0) {
+                moveIntensity = 0.4 * this.difficultyFactor;
+                targetY = ball.yLocation - (this.paddleHeight / 2);
+            } else {
+                moveIntensity = this.difficultyFactor;
+            }
+            if (ball.speedX < 0) {
+                const distanceRatio = Math.max(0, 1 - (ball.xLocation / this.reactionDistance));
+                moveIntensity *= (0.7 + (0.3 * distanceRatio));
+            }
+            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 3) * moveIntensity;
+            const goal = targetY - this.yLocation;
+            if(Math.abs(goal) > currentSpeed) {
+                if (goal > 0) {
+                    this.yLocation += currentSpeed;
+                } else {
+                    this.yLocation -= currentSpeed;
+                }
+            } else {
+                this.yLocation += goal;
             }
             if (this.yLocation < 0) this.yLocation = 0;
             if (this.yLocation + this.paddleHeight > canvas.height) this.yLocation = canvas.height - this.paddleHeight;
+        },
+        updateDifficulty: function() {
+            const scoreDiff = playerObject.score - this.score;
+            if (scoreDiff > 3) {
+                this.difficultyFactor = 1.2;
+            } else if (scoreDiff < -3) {
+                this.difficultyFactor = 0.9;
+            } else {
+                this.difficultyFactor = 1.0;
+            }
         }
     }
     const keys = {};
@@ -162,22 +206,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ball.yLocation - ball.radius < 0 || ball.yLocation + ball.radius > canvas.height) {
             ball.speedY = -ball.speedY;
         }
-        if (
-            (ball.xLocation + ball.radius > playerObject.xLocation &&
-            ball.xLocation - ball.radius < playerObject.xLocation + playerObject.paddleWidth &&
-            ball.yLocation + ball.radius > playerObject.yLocation &&
-            ball.yLocation - ball.radius < playerObject.yLocation + playerObject.paddleHeight)
-            ||
-            (ball.xLocation - ball.radius < aiPlayerObject.xLocation + aiPlayerObject.paddleWidth &&
-            ball.xLocation + ball.radius > aiPlayerObject.xLocation &&
-            ball.yLocation + ball.radius > aiPlayerObject.yLocation &&
-            ball.yLocation - ball.radius < aiPlayerObject.yLocation + aiPlayerObject.paddleHeight)
-        ) {
-            ball.speedX = -ball.speedX;
-            ball.speedY += (Math.random() * 2 - 1);
-            ball.speedX *= 1.02;
-            if (Math.abs(ball.speedX) > 15) ball.speedX = 15 * Math.sign(ball.speedX);
-            if (Math.abs(ball.speedY) > 10) ball.speedY = 10 * Math.sign(ball.speedY);
+        const currentTime = timestamp;
+        if (currentTime - ball.lastCollisionTime > ball.collisionDebounceTime) {
+            const hitPlayerPaddle = (
+                ball.xLocation + ball.radius > playerObject.xLocation &&
+                ball.xLocation - ball.radius < playerObject.xLocation + playerObject.paddleWidth &&
+                ball.yLocation + ball.radius > playerObject.yLocation &&
+                ball.yLocation - ball.radius < playerObject.yLocation + playerObject.paddleHeight
+            );
+            const hitAiPaddle = (
+                ball.xLocation - ball.radius < aiPlayerObject.xLocation + aiPlayerObject.paddleWidth &&
+                ball.xLocation + ball.radius > aiPlayerObject.xLocation &&
+                ball.yLocation + ball.radius > aiPlayerObject.yLocation &&
+                ball.yLocation - ball.radius < aiPlayerObject.yLocation + aiPlayerObject.paddleHeight
+            );
+            if (hitPlayerPaddle || hitAiPaddle) {
+                ball.speedX = -ball.speedX;
+                ball.speedY += (Math.random() * 2 - 1);
+                ball.speedX *= 1.02;
+                if (Math.abs(ball.speedX) > 15) ball.speedX = 15 * Math.sign(ball.speedX);
+                if (Math.abs(ball.speedY) > 10) ball.speedY = 10 * Math.sign(ball.speedY);
+                ball.lastCollisionTime = currentTime;
+            }
         }
         if (ball.xLocation - ball.radius < 0) {
             playerObject.score++;
@@ -200,4 +250,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     loop();
 });
-
