@@ -1,17 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    let gameTime = 0;
+    const speedIncreaseInterval = 1000; 
+    let lastSpeedIncreaseTime = 0;
+    const speedIncreaseFactor = 0.02; 
     const ball = {
         xLocation: canvas.width / 2,
         yLocation: canvas.height / 2,
         radius: 10,
         speedX: 5,
         speedY: 5,
+        baseSpeedX: 5,
+        baseSpeedY: 5,
         reset: function() {
             this.xLocation = canvas.width / 2;
             this.yLocation = canvas.height / 2;
-            this.speedX = 5 * (Math.random() > 0.5 ? 1: -1);
-            this.speedY = 5 * (Math.random() > 0.5 ? 1: -1);
+            this.speedX = this.baseSpeedX * (Math.random() > 0.5 ? 1: -1);
+            this.speedY = this.baseSpeedY * (Math.random() > 0.5 ? 1: -1);
         }
     }
     const playerObject = {
@@ -20,11 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
         paddleWidth: 15,
         paddleHeight: 100,
         score: 0,
+        baseSpeed: 6,
         move: function(direction) {
+            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 5);
             if (direction === 'up' && this.yLocation > 0) {
-                this.yLocation -= 6;
+                this.yLocation -= currentSpeed;
             } else if (direction === 'down' && this.yLocation + this.paddleHeight < canvas.height) {
-                this.yLocation += 6;
+                this.yLocation += currentSpeed;
             }
         }
     }
@@ -34,15 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
         paddleWidth: 15,
         paddleHeight: 100,
         score: 0,
+        baseSpeed: 5,
         move: function() {
             const goal = ball.yLocation - (this.yLocation + this.paddleHeight / 2);
-            const aiSpeed = 5;
+            const currentSpeed = this.baseSpeed * (ball.baseSpeedX / 5);
             if (ball.speedX > 0) {
-                if(Math.abs(this.yLocation - goal) > aiSpeed) {
+                if(Math.abs(this.yLocation - goal) > currentSpeed) {
                     if (this.yLocation < goal) {
-                        this.yLocation += aiSpeed;
+                        this.yLocation += currentSpeed;
                     } else {
-                        this.yLocation -= aiSpeed;
+                        this.yLocation -= currentSpeed;
                     }
                 }
             }
@@ -91,7 +100,33 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.fillText(aiPlayerObject.score, canvas.width / 4, 50);
         ctx.fillText(playerObject.score, canvas.width * 3/4, 50);
     }
-    function game() {
+    function drawSpeedDisplay() {
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = "white";
+        const speedPercentage = Math.round((ball.baseSpeedX / 5 - 1) * 100);
+        ctx.fillText(`Speed: +${speedPercentage}%`, canvas.width / 2, 20);
+        const playerSpeedPercentage = Math.round((playerObject.baseSpeed * (ball.baseSpeedX / 5) / 6 - 1) * 100);
+        ctx.fillText(`Paddle Speed: +${playerSpeedPercentage}%`, canvas.width / 2, 40);
+    }
+    function increaseSpeed() {
+        ball.baseSpeedX += ball.baseSpeedX * speedIncreaseFactor;
+        ball.baseSpeedY += ball.baseSpeedY * speedIncreaseFactor;
+        const directionX = Math.sign(ball.speedX);
+        const directionY = Math.sign(ball.speedY);
+        ball.speedX = ball.baseSpeedX * directionX;
+        ball.speedY = ball.baseSpeedY * directionY;
+        if (ball.baseSpeedX > 15) ball.baseSpeedX = 15;
+        if (ball.baseSpeedY > 10) ball.baseSpeedY = 10;
+    }
+    function game(timestamp) {
+        if (!lastSpeedIncreaseTime) {
+            lastSpeedIncreaseTime = timestamp;
+        }
+        if (timestamp - lastSpeedIncreaseTime > speedIncreaseInterval) {
+            increaseSpeed();
+            lastSpeedIncreaseTime = timestamp;
+        }
         if (keys['w'] || keys['W'] || keys['ArrowUp']) {
             playerObject.move('up');
         }
@@ -129,14 +164,15 @@ document.addEventListener('DOMContentLoaded', function() {
             ball.reset();
         }
     }
-    function loop() {
+    function loop(timestamp) {
         clearCanvas();
         drawBall();
         drawMiddleLine();
         drawAIPaddle();
         drawPlayerPaddle();
         drawScores();
-        game();
+        drawSpeedDisplay();
+        game(timestamp);
         requestAnimationFrame(loop);
     }
     loop();
