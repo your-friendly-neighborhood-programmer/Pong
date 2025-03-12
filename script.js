@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const computedStyle = getComputedStyle(document.documentElement);
+    const primaryColor = computedStyle.getPropertyValue('--primary-color').trim();
+    const secondaryColor = computedStyle.getPropertyValue('--secondary-color').trim();
+    const aiPaddleColor = computedStyle.getPropertyValue('--ai-paddle-color').trim();
+    const playerPaddleColor = computedStyle.getPropertyValue('--player-paddle-color').trim();
+    const textColor = computedStyle.getPropertyValue('--text-color').trim();
     let gameTime = 0;
     const speedIncreaseInterval = 1000; 
     let lastSpeedIncreaseTime = 0;
@@ -67,17 +73,23 @@ document.addEventListener('DOMContentLoaded', function() {
         keys[e.key] = false;
     });
     function clearCanvas() {
-        ctx.fillStyle = "black";
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#0f0f30');
+        gradient.addColorStop(1, '#1a1a40');
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     function drawBall() {
-        ctx.fillStyle = "white";
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = primaryColor;
+        ctx.fillStyle = primaryColor;
         ctx.beginPath();
         ctx.arc(ball.xLocation, ball.yLocation, 10, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
     }
     function drawMiddleLine() {
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle = secondaryColor;
         ctx.setLineDash([10, 5]);
         ctx.beginPath();
         ctx.moveTo(canvas.width / 2, 0);
@@ -86,24 +98,35 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.setLineDash([]);
     }
     function drawAIPaddle() {
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = aiPaddleColor;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = aiPaddleColor;
         ctx.fillRect(aiPlayerObject.xLocation, aiPlayerObject.yLocation, aiPlayerObject.paddleWidth, aiPlayerObject.paddleHeight);
+        ctx.shadowBlur = 0;
     }
     function drawPlayerPaddle() {
-        ctx.fillStyle = 'green';
+        ctx.fillStyle = playerPaddleColor;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = playerPaddleColor;
         ctx.fillRect(playerObject.xLocation, playerObject.yLocation, playerObject.paddleWidth, playerObject.paddleHeight);
+        ctx.shadowBlur = 0;
     }
     function drawScores() {
-        ctx.font = '30px Arial';
+        ctx.font = 'bold 30px Orbitron, Rajdhani, monospace';
         ctx.textAlign = 'center';
-        ctx.fillStyle = "white";
+        ctx.fillStyle = textColor;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = aiPaddleColor;
         ctx.fillText(aiPlayerObject.score, canvas.width / 4, 50);
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = playerPaddleColor;
         ctx.fillText(playerObject.score, canvas.width * 3/4, 50);
+        ctx.shadowBlur = 0;
     }
     function drawSpeedDisplay() {
-        ctx.font = '16px Arial';
+        ctx.font = 'bold 16px Orbitron, Rajdhani, monospace';
         ctx.textAlign = 'center';
-        ctx.fillStyle = "white";
+        ctx.fillStyle = secondaryColor;
         const speedPercentage = Math.round((ball.baseSpeedX / 5 - 1) * 100);
         ctx.fillText(`Speed: +${speedPercentage}%`, canvas.width / 2, 20);
         const playerSpeedPercentage = Math.round((playerObject.baseSpeed * (ball.baseSpeedX / 5) / 6 - 1) * 100);
@@ -166,10 +189,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function loop(timestamp) {
         clearCanvas();
-        drawBall();
         drawMiddleLine();
         drawAIPaddle();
         drawPlayerPaddle();
+        drawBall();
         drawScores();
         drawSpeedDisplay();
         game(timestamp);
