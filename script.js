@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const keys = {};
     document.addEventListener('keydown', function(e) {
         keys[e.key] = true;
+        e.preventDefault();
         if ((e.key === ' ' || e.key === 'Enter') && gameState !== 'playing') {
             startNewRound();
         }
